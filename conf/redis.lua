@@ -12,7 +12,6 @@ local redisconf = {
     online = {
         '127.0.0.1:6379'
     },
-
 }
 
 return redisconf

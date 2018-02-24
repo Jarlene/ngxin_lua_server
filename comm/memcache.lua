@@ -1,9 +1,8 @@
 local memcache = require "resty.memcached"
 local memcache_conf = require "conf.memcache"
-local host_conf = memcache_conf["host"][g_runtime.RUNTIME]
-local weight = memcache_conf["node_num"][g_runtime.RUNTIME]
-
---function_module = require("lib.function")
+local runtime = require "conf.runtime"
+local host_conf = memcache_conf["host"][runtime.RUNTIME]
+local weight = memcache_conf["node_num"][runtime.RUNTIME]
 
 local Memcached = {
     _node = {},
@@ -11,18 +10,18 @@ local Memcached = {
 }
 
 --建立连接
-function _connect(ip,port)
-    local client,err = memcache:new()
-    
+function _connect(ip, port)
+    local client, err = memcache:new()
+
     if not client then
         return nil
     end
 
     client:set_timeout(1000)
-    
 
-    local result, err = client:connect(ip,port)    
-    if not result  then
+
+    local result, err = client:connect(ip, port)
+    if not result then
         return nil
     end
 
@@ -30,52 +29,52 @@ function _connect(ip,port)
 end
 
 --一致性hash
-function _lookup(key) 
-    local selected_server,selected_weight,current_weight;
+function _lookup(key)
+    local selected_server, selected_weight, current_weight;
 
-    for server,weight in pairs(Memcached._node) do
-        current_weight = ngx.md5(server.."_"..key)
+    for server, weight in pairs(Memcached._node) do
+        current_weight = ngx.md5(server .. "_" .. key)
         current_weight = ngx.crc32_short(current_weight)
         current_weight = current_weight / weight
 
         if not selected_weight or selected_weight > current_weight then
             selected_server = server
-            selected_weight = current_weight  
+            selected_weight = current_weight
         end
     end
 
-    local i,j = string.find(selected_server,":") 
-    local ip = string.sub(selected_server,1,i-1)
-    local port = string.sub(selected_server,i+1)
+    local i, j = string.find(selected_server, ":")
+    local ip = string.sub(selected_server, 1, i - 1)
+    local port = string.sub(selected_server, i + 1)
 
-    return ip,port
+    return ip, port
 end
 
 --获取memcache实例
 function Memcached:getMemcache(key)
-    if not host_conf or #host_conf==0 then
-       return nil 
+    if not host_conf or #host_conf == 0 then
+        return nil
     end
 
-    for key,host in pairs(host_conf) do    
-        Memcached._node[host]  =  weight
+    for key, host in pairs(host_conf) do
+        Memcached._node[host] = weight
     end
 
-    local ip,port,mem_key,client
+    local ip, port, mem_key, client
 
-    for i=1,2 do  
-        ip,port = _lookup(key)
-        mem_key = ip.."_"..port
+    for i = 1, 2 do
+        ip, port = _lookup(key)
+        mem_key = ip .. "_" .. port
         Memcached._key = mem_key
 
         if ngx.ctx[mem_key] then
             return ngx.ctx[mem_key]
         end
 
-        client = _connect(ip,port)
-             
+        client = _connect(ip, port)
+
         if not client then
-            Memcached._node[ip..":"..port]=1 
+            Memcached._node[ip .. ":" .. port] = 1
         else
             break
         end
@@ -103,10 +102,10 @@ function Memcached:get(key)
     end
 
 
-    local result = object:get(key)    
+    local result = object:get(key)
     if not result then
         return nil
-    end 
+    end
 
     ngx.ctx[Memcached._key] = nil
 
@@ -121,7 +120,7 @@ function Memcached:getMulti(keys)
     if type(keys) ~= 'table' then
         return false
     end
-    
+
     local valueArray = {}
     local servers = {}
     local server = nil
@@ -130,7 +129,7 @@ function Memcached:getMulti(keys)
     for index, key in pairs(keys) do
         valueArray[key] = false
         ip, port = _lookup(key)
-        server = ip..':'..port
+        server = ip .. ':' .. port
         servers[server] = servers[server] or {}
         table.insert(servers[server], key)
     end
@@ -140,7 +139,7 @@ function Memcached:getMulti(keys)
         ip = string.sub(server, 1, i - 1)
         port = string.sub(server, i + 1)
         for i = 1, 2 do
-            mem_key = ip.."_"..port
+            mem_key = ip .. "_" .. port
             Memcached._key = mem_key
 
             if ngx.ctx[mem_key] then
@@ -173,15 +172,15 @@ function Memcached:getMulti(keys)
 end
 
 --设置缓存
-function Memcached:set(key,value,exptime)
+function Memcached:set(key, value, exptime)
     local object = self:getMemcache(key)
     if not object then
         return nil
     end
 
 
-    local result = object:set(key,value,exptime)
-    
+    local result = object:set(key, value, exptime)
+
     if not result then
         return nil
     end

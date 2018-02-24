@@ -1,6 +1,6 @@
 local runtime = {
-   DATABASE="xxxxx",
-   RUNTIME="online"
+    DATABASE = "xxxxx",
+    RUNTIME = "online"
 }
 
 return runtime

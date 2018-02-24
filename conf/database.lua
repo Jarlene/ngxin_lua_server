@@ -1,26 +1,22 @@
 local database = {
-
-    iread8 = {
+    xxxxx = {
         test = {
-            hosts = {"127.0.0.1"},
+            hosts = { "127.0.0.1" },
             port = 3306,
-            database = "iread8",
+            database = "xxxxx",
             username = "root",
             password = "root",
-            timeout= 1000
+            timeout = 1000
         },
-        dev = {
-
-        },
+        dev = {},
         online = {
-            hosts = {"127.0.0.1"},
+            hosts = { "127.0.0.1" },
             port = 3306,
-            database = "iread8",
+            database = "xxxxx",
             username = "root",
             password = "root",
-            timeout= 1000
+            timeout = 1000
         },
-
     },
 }
 

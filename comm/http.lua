@@ -13,28 +13,27 @@ local function getParam(param)
         args = ngx.req.get_post_args()
     end
 
-    if not param then 
+    if not param then
         return args
     end
-    
+
     local p = args[param]
 
     --多个相同参数返回最后一个
     if type(p) == "table" then
         return p[#p]
     elseif type(p) == "string" and p == "" then
-	return nil
+        return nil
     else
         return p
     end
-
 end
 
 --获取Cookie
 local function getCookie()
     local cookie_table = {}
     local cookie = ngx.req.get_headers()['Cookie']
-    
+
     if not cookie then
         return {}
     end
@@ -43,11 +42,11 @@ local function getCookie()
         cookie = cookie[1]
     end
 
-    cookie = base.split(cookie,";")
+    cookie = base.split(cookie, ";")
 
-    for key,value in pairs(cookie) do    
+    for key, value in pairs(cookie) do
         if value and value ~= "" then
-            local pos = string.find(value,"=")
+            local pos = string.find(value, "=")
             if pos then
                 local sub_key = (string.gsub(string.sub(value, 1, pos - 1), "^%s*(.-)%s*$", "%1"));
                 local sub_val = string.sub(value, pos + 1);
@@ -68,20 +67,20 @@ end
 ]]
 local function getMultiCapture(...)
     local http_url = {}
-    for i,v in pairs({...}) do
+    for i, v in pairs({ ... }) do
         if i <= 15 then
-            local tmp_url={}
-            table.insert(tmp_url, v) 
+            local tmp_url = {}
+            table.insert(tmp_url, v)
             table.insert(http_url, tmp_url)
         end
     end
 
 
     local ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9, ht10, ht11, ht12, ht13, ht14, ht15 = ngx.location.capture_multi(http_url)
-    local ht = {ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9, ht10, ht11, ht12, ht13, ht14, ht15}
+    local ht = { ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9, ht10, ht11, ht12, ht13, ht14, ht15 }
     local container = {}
 
-    for key,value in pairs(ht) do
+    for key, value in pairs(ht) do
         if value then
             table.insert(container, value)
         end
@@ -89,15 +88,15 @@ local function getMultiCapture(...)
 
     local flag
 
-    for key,value in pairs(container) do
+    for key, value in pairs(container) do
         if value.status == ngx.HTTP_OK then
 
             if value.header["Content-Encoding"] == "gzip" then
                 local stream = g_zlib.inflate()
                 local stream = stream(value.body)
-                flag, value = pcall( function() return json.decode(stream) end)
+                flag, value = pcall(function() return json.decode(stream) end)
             else
-                flag, value = pcall( function() return json.decode(value.body) end)
+                flag, value = pcall(function() return json.decode(value.body) end)
             end
 
             if flag then
@@ -108,10 +107,10 @@ local function getMultiCapture(...)
         else
 
             ht[key] = nil
-        end 
+        end
     end
-    
-    return ht[1], ht[2], ht[3], ht[4], ht[5], ht[6], ht[7], ht[8], ht[9], ht[10], ht[11], ht[12],ht[13], ht[14], ht[15]
+
+    return ht[1], ht[2], ht[3], ht[4], ht[5], ht[6], ht[7], ht[8], ht[9], ht[10], ht[11], ht[12], ht[13], ht[14], ht[15]
 end
 
 --[[
@@ -121,7 +120,7 @@ end
     @param table post 默认get请求,post不为空则为post请求
     @return table|nil
 ]]
-local function getCapture (url, format, post)
+local function getCapture(url, format, post)
     if not url then
         return nil, "param error"
     end
@@ -132,12 +131,12 @@ local function getCapture (url, format, post)
         return nil
     end
 
-    local result,flag = {}
+    local result, flag = {}
     if http_result.header["Content-Encoding"] == "gzip" then
         local stream = g_zlib.inflate()
         local stream = stream(http_result.body)
         flag, result = pcall(function() return json.decode(stream) end)
-    else 
+    else
         flag, result = pcall(function() return json.decode(http_result.body) end)
     end
 
@@ -152,7 +151,7 @@ local function getCapture (url, format, post)
         end
     end
 
-    return result 
+    return result
 end
 
 

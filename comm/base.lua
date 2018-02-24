@@ -1,17 +1,16 @@
-
-local md5 =require "resty.md5"
+local md5 = require "resty.md5"
 
 local M = {}
 
 --字符串进行urlencode
-local function urlencode(str)   
-    if (str) then      
-        str = string.gsub (str, "\n", "\r\n")      
-        str = string.gsub (str, "([^%w ])",function (c) return string.format ("%%%02X", string.byte(c)) end)      
-        str = string.gsub (str, " ", "+")   
-    end   
+local function urlencode(str)
+    if (str) then
+        str = string.gsub(str, "\n", "\r\n")
+        str = string.gsub(str, "([^%w ])", function(c) return string.format("%%%02X", string.byte(c)) end)
+        str = string.gsub(str, " ", "+")
+    end
 
-    return str    
+    return str
 end
 
 --字符串分隔
@@ -43,17 +42,17 @@ local function strtotime(time_str)
         return 0
     end
 
-    local i  = string.find(time_str, " ")
+    local i = string.find(time_str, " ")
 
     --只有日期从当天0:0:0开始计算
     if not i then
-        time_str = time_str .." 0:0:0"
+        time_str = time_str .. " 0:0:0"
     end
 
-    local time = split(time_str," ")
+    local time = split(time_str, " ")
     local ymd = split(time[1], "-")
     local hms = split(time[2], ":")
-    local timestamp = os.time({year=ymd[1], month=ymd[2], day=ymd[3], hour=hms[1], min=hms[2], sec=hms[3]})
+    local timestamp = os.time({ year = ymd[1], month = ymd[2], day = ymd[3], hour = hms[1], min = hms[2], sec = hms[3] })
 
     return timestamp
 end
@@ -80,7 +79,7 @@ end
     @param string phone
     @return string
 ]]
-local function formatPhone (phone)
+local function formatPhone(phone)
     if not phone then
         return nil
     end
@@ -95,7 +94,7 @@ end
     @param string email
     @return string
 ]]
-local function formatEmail (email)
+local function formatEmail(email)
     if not email then
         return nil
     end
@@ -105,16 +104,16 @@ local function formatEmail (email)
         return nil
     end
 
-    local name = string.sub(email ,1, i-1)
+    local name = string.sub(email, 1, i - 1)
     local name_len = string.len(name)
     if name_len > 3 then
-        return string.sub(email, 1, 2) .. string.rep("*", name_len-3) .. string.sub(email, i-1)
+        return string.sub(email, 1, 2) .. string.rep("*", name_len - 3) .. string.sub(email, i - 1)
     else
-        return string.sub(email, 1, 1) .. string.rep("*", name_len-1) .. string.sub(email, i)
+        return string.sub(email, 1, 1) .. string.rep("*", name_len - 1) .. string.sub(email, i)
     end
 end
 
-M.urlencode  = urlencode
+M.urlencode = urlencode
 M.split = split
 M.strtotime = strtotime
 M.inarray = inarray
