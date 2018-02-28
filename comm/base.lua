@@ -116,7 +116,7 @@ end
 
 
 local function tostring(arr)
-    if not arr or type(arr) ~= table or #arr == 0 then
+    if not arr or type(arr) ~= 'table' or #arr == 0 then
         return nil
     end
     local str = ""
