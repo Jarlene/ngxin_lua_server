@@ -113,11 +113,60 @@ local function formatEmail(email)
     end
 end
 
+
+
+local function tostring(arr)
+    if not arr or type(arr) ~= table or #arr == 0 then
+        return nil
+    end
+    local str = ""
+    for _, val in pairs(arr) do
+        str = str..val..","
+    end
+    return string.sub(str, 0, -2)
+end
+
+
+local function range(arr, pos, size)
+    if not arr or type(arr) ~= 'table' or #arr == 0 then
+        return nil
+    end
+
+    if #arr < pos then
+        return nil
+    end
+    local res = {}
+    if #arr == pos then
+        res[1] = arr[#arr]
+    end
+    local index = 1
+    if #arr >= pos + size then
+        for j = pos, pos + size - 1, 1 do
+            res[index] = arr[j]
+            index = index + 1
+        end
+    else
+        for j = pos, #arr, 1 do
+            res[index] = arr[j]
+            index = index + 1
+        end
+    end
+    return res
+
+end
+
+
+local function trim (s)
+    return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
+end
+
 M.urlencode = urlencode
 M.split = split
 M.strtotime = strtotime
 M.inarray = inarray
 M.formatPhone = formatPhone
 M.formatEmail = formatEmail
-
+M.tostring = tostring
+M.range = range
+M.trim = trim
 return M
