@@ -1,14 +1,23 @@
-local runtimeconf = require 'conf.runtime'
-local p = runtimeconf.PACKAGE_PATH
+
+local function getPath()
+    local info = debug.getinfo(1, "S")
+    local path = info.source
+    path = string.sub(path, 2, -1)
+    path = string.match(path, "^.*/")
+    path = string.match(path, "^.*/")
+    local cpath = string.match(path, "^.*/")
+    return path, cpath
+end
+local path, cpath = getPath()
 local m_package_path = package.path
-package.path = string.format("%s?.lua;%s", p, m_package_path)
-local c = runtimeconf.PACKAGE_CPATH
+package.path = string.format("%s?.lua;%s", path, m_package_path)
 local c_path = package.cpath
-package.cpath = string.format("%s?.so;%s", c, c_path)
+package.cpath = string.format("%s?.so;%s", cpath.."lualibs/", c_path)
 
 json = require 'cjson'
 local returncode = require 'conf.returncode'
 local catelog = require 'conf.catelog'
+local runtimeconf = require 'conf.runtime'
 
 --路由分发
 local dir = catelog[runtimeconf.RUNTIME][1]
