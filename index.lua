@@ -5,9 +5,11 @@ local function getPath()
     path = string.sub(path, 2, -1)
     path = string.match(path, "^.*/")
     path = string.match(path, "^.*/")
-    local cpath = string.match(path, "^.*/")
+    local cpath = string.sub(path, 1, -2)
+    cpath = string.match(cpath, "^.*/")
     return path, cpath
 end
+
 local path, cpath = getPath()
 local m_package_path = package.path
 package.path = string.format("%s?.lua;%s", path, m_package_path)
