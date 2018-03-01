@@ -7,7 +7,9 @@
 --
 
 local catelog = {
-    online = { 'xxx' }
+    online = { '/xxxx' }, --必须和nginx上配置的location 路径一样
+    dev = {'/xxxx' },
+    test = {'/xxx'},
 }
 
 

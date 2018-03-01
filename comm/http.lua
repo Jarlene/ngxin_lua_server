@@ -1,7 +1,7 @@
 local Http = {}
 
 local base = require "comm.base"
-
+local gzip = require 'zlib'
 --获取http参数 /post or get
 local function getParam(param)
     local args
@@ -35,7 +35,7 @@ local function getCookie()
     local cookie = ngx.req.get_headers()['Cookie']
 
     if not cookie then
-        return {}
+        return cookie_table
     end
 
     if type(cookie) == "table" then
@@ -46,13 +46,11 @@ local function getCookie()
 
     for key, value in pairs(cookie) do
         if value and value ~= "" then
-            local pos = string.find(value, "=")
-            if pos then
-                local sub_key = (string.gsub(string.sub(value, 1, pos - 1), "^%s*(.-)%s*$", "%1"));
-                local sub_val = string.sub(value, pos + 1);
-                cookie_table[sub_key] = sub_val
-            else
+            local kvs =  base.split(value, "=")
+            if #kvs == 1 then
                 table.insert(cookie_table, value)
+            elseif #kvs == 2 then
+                cookie_table[base.trim(kvs[1])] = base.trim(kvs[2])
             end
         end
     end
@@ -92,7 +90,7 @@ local function getMultiCapture(...)
         if value.status == ngx.HTTP_OK then
 
             if value.header["Content-Encoding"] == "gzip" then
-                local stream = g_zlib.inflate()
+                local stream = gzip.inflate()
                 local stream = stream(value.body)
                 flag, value = pcall(function() return json.decode(stream) end)
             else
@@ -133,7 +131,7 @@ local function getCapture(url, format, post)
 
     local result, flag = {}
     if http_result.header["Content-Encoding"] == "gzip" then
-        local stream = g_zlib.inflate()
+        local stream = gzip.inflate()
         local stream = stream(http_result.body)
         flag, result = pcall(function() return json.decode(stream) end)
     else

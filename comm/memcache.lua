@@ -1,8 +1,8 @@
 local memcache = require "resty.memcached"
 local memcache_conf = require "conf.memcache"
 local runtime = require "conf.runtime"
-local host_conf = memcache_conf["host"][runtime.RUNTIME]
-local weight = memcache_conf["node_num"][runtime.RUNTIME]
+local host_conf = memcache_conf[runtime.RUNTIME]["host"]
+local weight = memcache_conf[runtime.RUNTIME]["node_num"]
 
 local Memcached = {
     _node = {},

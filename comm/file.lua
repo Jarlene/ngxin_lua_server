@@ -18,7 +18,11 @@ local function read(path)
     return content
 end
 
-local function write(content)
+local function write(path, content)
+    local file = io.open(path,"w")
+    file:write(content)
+    file:close()
+    return true
 end
 
 local function getFileName(path)

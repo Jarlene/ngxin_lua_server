@@ -21,7 +21,7 @@ function MySQL:getClient(database)
         return nil
     end
 
-    local dbConf = db[database][runtime.RUNTIME]
+    local dbConf = db[runtime.RUNTIME]
     local hosts_num = #dbConf.hosts
     local options, result, errmsg = {}, {}, ""
 
@@ -32,7 +32,7 @@ function MySQL:getClient(database)
         options = {
             host = dbConf.hosts[i],
             port = dbConf.port,
-            database = dbConf.database,
+            database = tostring(database),
             user = dbConf.username,
             password = dbConf.password,
             max_packet_size = 1024 * 1024

@@ -4,7 +4,7 @@
 
 local redisconf = {
     test = {
-        '127.0.0.1:6379'
+        '127.0.0.1:6379' -- redis ip:port
     },
     dev = {
         '127.0.0.1:6379'
