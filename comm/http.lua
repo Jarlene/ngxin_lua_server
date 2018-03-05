@@ -2,15 +2,15 @@ local Http = {}
 
 local base = require "comm.base"
 local gzip = require 'zlib'
+
+
 --获取http参数 /post or get
 local function getParam(param)
-    local args
     local request_method = ngx.var.request_method
-    if "GET" == request_method then
-        args = ngx.req.get_uri_args()
-    elseif "POST" == request_method then
+    local args = ngx.req.get_uri_args()
+    if "POST" == request_method then
         ngx.req.read_body()
-        args = ngx.req.get_post_args()
+        table.insert(args, ngx.req.get_post_args())
     end
 
     if not param then
