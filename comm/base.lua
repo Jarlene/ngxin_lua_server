@@ -120,12 +120,12 @@ local function tostring(arr, split)
         return nil
     end
     local str = ""
+    local s = split
+    if not s then
+        s = ","
+    end
     for _, val in pairs(arr) do
-        if split then
-            str = str..val..split
-        else
-            str = str..val..","
-        end
+        str = str .. val .. s
     end
     return string.sub(str, 0, -2)
 end
