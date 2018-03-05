@@ -115,13 +115,17 @@ end
 
 
 
-local function tostring(arr)
+local function tostring(arr, split)
     if not arr or type(arr) ~= 'table' or #arr == 0 then
         return nil
     end
     local str = ""
     for _, val in pairs(arr) do
-        str = str..val..","
+        if split then
+            str = str..val..split
+        else
+            str = str..val..","
+        end
     end
     return string.sub(str, 0, -2)
 end
