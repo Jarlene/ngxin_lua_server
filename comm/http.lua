@@ -1,6 +1,7 @@
 local Http = {}
 
 local base = require "comm.base"
+local log = require "comm.log"
 local gzip = require 'zlib'
 
 
@@ -126,6 +127,7 @@ local function getCapture(url, format, post)
 
     local http_result = ngx.location.capture(url)
     if http_result.status ~= ngx.HTTP_OK then
+        log:info("getCapture error:"..url)
         return nil
     end
 
@@ -141,10 +143,12 @@ local function getCapture(url, format, post)
     if not flag then
         http_result = ngx.location.capture(url)
         if http_result.status ~= ngx.HTTP_OK then
+            log:info("getCapture error:"..url)
             return nil
         end
         flag, result = pcall(function() return json.decode(http_result.body) end)
         if not flag then
+            log:info("getCapture error:"..url)
             result = nil
         end
     end

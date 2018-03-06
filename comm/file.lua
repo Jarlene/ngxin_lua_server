@@ -5,12 +5,13 @@
 -- Time: 下午10:23
 -- To change this template use File | Settings | File Templates.
 --
-
+local log = require "comm.log"
 File = {}
 
 local function read(path)
     local file = io.open(path, "r")
     if not file then
+        log:info("read file error:"..path)
         return nil
     end
     local content = file:read("*a")
@@ -20,6 +21,10 @@ end
 
 local function write(path, content)
     local file = io.open(path,"w")
+    if not file then
+        log:info("write file error:"..path)
+        return false
+    end
     file:write(content)
     file:close()
     return true
