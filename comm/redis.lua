@@ -74,7 +74,7 @@ function R:set(key, value, exp)
 
     local ok, err
     if exp then
-        ok, err = object:set(key, value, "EX", exp)
+        ok, err = object:set(key, value, "PX", exp)
     else
         ok, err = object:set(key, value)
     end
