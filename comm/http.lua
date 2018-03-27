@@ -31,7 +31,7 @@ local function getParam(param)
 end
 
 --获取Cookie
-local function getCookie()
+local function getCookie(param)
     local cookie_table = {}
     local cookie = ngx.req.get_headers()['Cookie']
 
@@ -47,7 +47,7 @@ local function getCookie()
 
     for key, value in pairs(cookie) do
         if value and value ~= "" then
-            local kvs =  base.split(value, "=")
+            local kvs = base.split(value, "=")
             if #kvs == 1 then
                 table.insert(cookie_table, value)
             elseif #kvs == 2 then
@@ -56,11 +56,16 @@ local function getCookie()
         end
     end
 
+    if param then
+        return cookie_table[param]
+    end
+
     return cookie_table
 end
 
+
 --[[
-    @comment 并发访问多个后端服务(最多10个),只支持json格式数据
+    @comment 并发访问多个后端服务(最多15个),只支持json格式数据
     @param string url
     @return table|nil
 ]]
@@ -76,81 +81,66 @@ local function getMultiCapture(...)
 
 
     local ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9, ht10, ht11, ht12, ht13, ht14, ht15 = ngx.location.capture_multi(http_url)
-    local ht = { ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9, ht10, ht11, ht12, ht13, ht14, ht15 }
-    local container = {}
-
-    for key, value in pairs(ht) do
-        if value then
-            table.insert(container, value)
-        end
-    end
+    local container = { ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9, ht10, ht11, ht12, ht13, ht14, ht15 }
 
     local flag
-
     for key, value in pairs(container) do
         if value.status == ngx.HTTP_OK then
-
             if value.header["Content-Encoding"] == "gzip" then
-                local stream = gzip.inflate()
-                local stream = stream(value.body)
+                local zlib = gzip.inflate()
+                local stream = zlib(value.body)
                 flag, value = pcall(function() return json.decode(stream) end)
             else
                 flag, value = pcall(function() return json.decode(value.body) end)
             end
 
             if flag then
-                ht[key] = value
+                container[key] = value
             else
-                ht[key] = nil
+                container[key] = value.body
             end
         else
-
-            ht[key] = nil
+            container[key] = nil
         end
     end
 
-    return ht[1], ht[2], ht[3], ht[4], ht[5], ht[6], ht[7], ht[8], ht[9], ht[10], ht[11], ht[12], ht[13], ht[14], ht[15]
+    return container[1], container[2], container[3], container[4], container[5], container[6], container[7], container[8], container[9], container[10], container[11], container[12], container[13], container[14], container[15]
 end
 
 --[[
     @comment 访问单个后端服务
     @param string url
-    @param string format 后端服务返回的数据格式,目前只支持json(默认),mcpack
     @param table post 默认get请求,post不为空则为post请求
     @return table|nil
 ]]
-local function getCapture(url, format, post)
+local function getCapture(url, method)
     if not url then
         return nil, "param error"
     end
+    local http_method = ngx.HTTP_GET
+    if method and method == "post" then
+        http_method = ngx.HTTP_POST
+    end
 
 
-    local http_result = ngx.location.capture(url)
+    local http_result = ngx.location.capture(url, { method = http_method })
     if http_result.status ~= ngx.HTTP_OK then
-        log:info("getCapture error:"..url)
+        log:info("getCapture error:" .. url)
         return nil
     end
 
     local result, flag = {}
     if http_result.header["Content-Encoding"] == "gzip" then
-        local stream = gzip.inflate()
-        local stream = stream(http_result.body)
+        local zlib = gzip.inflate()
+        local stream = zlib(http_result.body)
         flag, result = pcall(function() return json.decode(stream) end)
     else
         flag, result = pcall(function() return json.decode(http_result.body) end)
     end
 
+    -- json decode error
     if not flag then
-        http_result = ngx.location.capture(url)
-        if http_result.status ~= ngx.HTTP_OK then
-            log:info("getCapture error:"..url)
-            return nil
-        end
-        flag, result = pcall(function() return json.decode(http_result.body) end)
-        if not flag then
-            log:info("getCapture error:"..url)
-            result = nil
-        end
+        result = http_result.body
     end
 
     return result
