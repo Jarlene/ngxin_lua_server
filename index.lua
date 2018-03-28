@@ -12,7 +12,7 @@ end
 
 local path, cpath = getPath()
 local m_package_path = package.path
-package.path = string.format("%s?.lua;%s", path, m_package_path)
+package.path = string.format("%s?.lua;", path)
 local c_path = package.cpath
 package.cpath = string.format("%s?.so;%s", cpath.."lualibs/", c_path)
 
