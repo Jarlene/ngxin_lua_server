@@ -7,11 +7,43 @@ local gzip = require 'zlib'
 
 --获取http参数 /post or get
 local function getParam(param)
+
     local request_method = ngx.var.request_method
-    local args = ngx.req.get_uri_args()
+    local args = {}
+    local getargs = ngx.req.get_uri_args()
+    if getargs and next(getargs) then
+        for k, v in pairs(getargs) do
+            args[k] = v
+        end
+    end
     if "POST" == request_method then
         ngx.req.read_body()
-        table.insert(args, ngx.req.get_post_args())
+        local postargs = ngx.req.get_post_args()
+        if postargs and next(postargs) then
+            for k, v in pairs(postargs) do
+                args[k] = v
+            end
+        else
+            local rpostArgs = {}
+            local body = ngx.req.get_body_data()
+            log:info("body data " .. body)
+            local post = base.split(tostring(body), "&")
+            if #post > 0 then
+                for _, v in pairs(post) do
+                    local temp = base.split(v, "=")
+                    if #temp == 2 then
+                        rpostArgs[tostring(base.trim(temp[1]))] = base.trim(temp[2])
+                    end
+                end
+            end
+            if next(rpostArgs) then
+                for k, v in pairs(rpostArgs) do
+                    args[k] = v
+                end
+            else
+                log:info("rpostArgs is empty")
+            end
+        end
     end
 
     if not param then
